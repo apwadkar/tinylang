@@ -8,11 +8,12 @@
 namespace tinylang {
 
 enum class TokenType {
+  Invalid,
   Number,// -?[0-9]+(.[0-9]*)?
   Operator// [+-*/]
 };
 
-enum class OperatorType : char { Add = '+', Subtract = '-', Multiply = '*', Divide = '/' };
+enum class OperatorType { Add = '+', Subtract = '-', Multiply = '*', Divide = '/' };
 
 struct Token
 {
@@ -26,7 +27,7 @@ struct Token
     switch (type) {
     case TokenType::Number:
       return fmt::format("NUMBER: {}", std::get<double>(data));
-    case TokenType::Operator:
+    case TokenType::Operator: {
       auto str = "";
       switch (std::get<OperatorType>(data)) {
       case OperatorType::Add:
@@ -44,6 +45,19 @@ struct Token
       }
       return fmt::format("OPERATOR: {}", str);
     }
+    default:
+      return "INVALID TOKEN TYPE";
+    }
+  }
+
+  static TokenType ExpectedTokenType(char inputChar)
+  {
+    if (static_cast<bool>(std::isdigit(inputChar)) || inputChar == '.') {
+      return TokenType::Number;
+    } else if (inputChar == '+' || inputChar == '-' || inputChar == '*' || inputChar == '/') {
+      return TokenType::Operator;
+    }
+    return TokenType::Invalid;
   }
 };
 

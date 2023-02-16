@@ -21,8 +21,15 @@ find_package(Catch2 3 REQUIRED)
 
 include(Catch)
 
+find_package(fmt CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+include_directories(${CMAKE_SOURCE_DIR}/src)
+
 add_executable(LexerTests LexerTests.cpp)
-target_link_libraries(LexerTests PRIVATE tinylang::project_warnings tinylang::project_options Catch2::Catch2WithMain)
+target_link_libraries(
+  LexerTests
+  PUBLIC tinylib
+  PRIVATE tinylang::project_warnings tinylang::project_options Catch2::Catch2WithMain fmt::fmt spdlog::spdlog)
 
 catch_discover_tests(
   LexerTests

@@ -11,12 +11,16 @@ namespace tinylang {
 class Lexer
 {
 public:
-  explicit Lexer(std::string input);
+  explicit Lexer(std::string inputStr);
 
   void Lex();
   void Print() const;
 
+  auto Tokens() const { return tokens; }
+
 private:
+  static Token CreateToken(std::string strData, TokenType tokenType);
+
   std::string input;
   std::vector<Token> tokens;
 };
