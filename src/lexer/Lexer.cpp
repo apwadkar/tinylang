@@ -1,6 +1,7 @@
 #include <cctype>
 #include <fmt/core.h>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <sstream>
 #include <utility>
 
@@ -10,7 +11,7 @@ namespace tinylang {
 
 constexpr size_t TOKEN_INIT_RESERVE = 10;
 
-Lexer::Lexer(std::string input) : input(std::move(input)) { tokens.reserve(TOKEN_INIT_RESERVE); }
+Lexer::Lexer(std::string input) : input(std::move(input)), tokens(TOKEN_INIT_RESERVE) {}
 
 void Lexer::Lex()
 {
@@ -21,11 +22,23 @@ void Lexer::Lex()
       if (currentType != TokenType::Number) {
         Token token{};
         token.type = currentType;
-        token.data = accumulator.str();
+        token.data = OperatorType{ c };
         accumulator.clear();
-        currentType = TokenType::Number;
+        currentType = TokenType::Operator;
+        tokens.emplace_back(token);
       }
     } else if (c == '+' || c == '-' || c == '*' || c == '/') {
+      if (currentType != TokenType::Operator) {
+        Token token{};
+        token.type = currentType;
+        auto str = accumulator.str();
+        token.data.emplace<double>(strtod(str.c_str(), nullptr));
+        accumulator.clear();
+        currentType = TokenType::Number;
+        tokens.emplace_back(token);
+      }
+    } else {
+      continue;
     }
 
     accumulator << c;
@@ -34,7 +47,7 @@ void Lexer::Lex()
 
 void Lexer::Print() const
 {
-  for (auto token : tokens) { std::cout << fmt::format(""); }
+  for (const auto &token : tokens) { spdlog::info(token.String()); }
 }
 
 }// namespace tinylang

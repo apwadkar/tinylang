@@ -3,6 +3,7 @@
 
 #include <fmt/core.h>
 #include <string>
+#include <variant>
 
 namespace tinylang {
 
@@ -11,55 +12,38 @@ enum class TokenType {
   Operator// [+-*/]
 };
 
+enum class OperatorType : char { Add = '+', Subtract = '-', Multiply = '*', Divide = '/' };
+
 struct Token
 {
-  TokenType type;
-  std::string data;
+  using TokenData = std::variant<double, OperatorType>;
 
-  virtual std::string String()
+  TokenType type;
+  TokenData data;
+
+  std::string String() const
   {
     switch (type) {
     case TokenType::Number:
-      return "NUMBER";
+      return fmt::format("NUMBER: {}", std::get<double>(data));
     case TokenType::Operator:
-      return "OPERATOR";
+      auto str = "";
+      switch (std::get<OperatorType>(data)) {
+      case OperatorType::Add:
+        str = "+";
+        break;
+      case OperatorType::Subtract:
+        str = "-";
+        break;
+      case OperatorType::Multiply:
+        str = "*";
+        break;
+      case OperatorType::Divide:
+        str = "/";
+        break;
+      }
+      return fmt::format("OPERATOR: {}", str);
     }
-  };
-
-  virtual ~Token() = default;
-};
-
-// Real numbers
-struct Number : Token
-{
-  double value;
-
-  std::string String() final { return fmt::format("NUMBER: {}", value); }
-};
-
-// Mathematical operators
-struct Operator : Token
-{
-  enum class OperatorType { Add, Subtract, Multiply, Divide } operatorType;
-
-  std::string String() final
-  {
-    auto str = "";
-    switch (operatorType) {
-    case OperatorType::Add:
-      str = "+";
-      break;
-    case OperatorType::Subtract:
-      str = "-";
-      break;
-    case OperatorType::Multiply:
-      str = "*";
-      break;
-    case OperatorType::Divide:
-      str = "/";
-      break;
-    }
-    return fmt::format("{}: {}", Token::String(), str);
   }
 };
 
